@@ -12,7 +12,7 @@ gainmatrix = np.load('/home/jetbot/state_of_art_Software/calibration_files/color
 results = np.zeros((im_height, im_width, 3), float)
 
 # Load calibration values fpr bending
-data = np.load('/home/jetbot/state_of_art_Software/calibration_files/bendcalib.npz')
+data = np.load('/home/jetbot/state_of_art_Software/calibration_files/calib_params_from_matlab.npz')
 mtx = data["mtx"]
 dist = data["dist"]
 rvecs = data["rvecs"]
@@ -47,16 +47,16 @@ def gstreamer_pipeline(
         )
     )
 
-def opencam():
+def opencam(freq):
     # Using default values in gstreamer_pipeline to capture video
-    cap = cv2.VideoCapture(gstreamer_pipeline(), cv2.CAP_GSTREAMER)
+    cap = cv2.VideoCapture(gstreamer_pipeline(framerate=freq), cv2.CAP_GSTREAMER)
     if cap.isOpened():
         return cap
     else:
         print("Unable to open camera")
         #return False
 
-def closecam():  
+def closecam(cap):  
     cap.release()  # Release the camera input
 
 def calibrateColor(img, gainmatrix):

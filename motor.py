@@ -91,7 +91,7 @@ def drive(speed):
         rightactuation = rightactuation_zero
         leftactuation = leftactuation_zero
     
-    print(rightactuation)
+    #print(rightactuation)
     rightactuation = int(rightactuation)
     leftactuation = int(leftactuation)
     leftmotor.actuate(leftactuation)
@@ -108,7 +108,7 @@ def drive_l(speed):
         # stand still
         leftactuation = leftactuation_zero
     leftmotor.actuate(int(leftactuation))
-    print('l %i'%leftactuation)
+    #print('l %i'%leftactuation)
 
 def drive_r(speed):
     if speed > 0:
@@ -121,4 +121,4 @@ def drive_r(speed):
         # stand still
         rightactuation = rightactuation_zero
     rightmotor.actuate(int(rightactuation))
-    print('r %i'%rightactuation)
+    #print('r %i'%rightactuation)
