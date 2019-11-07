@@ -53,26 +53,35 @@ def getarucoPosition(cap,aruco_id):
     return x,y,distance,x_aruco
 
 def vel_to_marker(cap,id,desired_distance,x_old):
+
     #Settings
-    on_top = 20
+    on_top = 10
 
     x,y,distance,x_aruco = getarucoPosition(cap,id)
     x = int(x)
     y = int(y)
+    if x > 720:
+        x = 720
+    if y > 540:
+        y = 540    
     if distance > desired_distance: #normal usage
             speedl,speedr = vel_control.followball(x,y,x_old)
     elif distance == 0 and x_old != int(720/2): #nothing found
         speedl,speedr = vel_control.followball(x,y,x_old)
+        speedl = speedl/2
+        speedr = speedr/2
     else:   #too close
         speedl = -20
         speedr = -20
     #small enhancement to get to the middle line faster
-    if x_aruco > 0.02:
+    if x_aruco > 0.05:
+        speedr = speedr - on_top
+        speedl = speedl + on_top
+    elif x_aruco < -0.05:
         speedr = speedr + on_top
         speedl = speedl - on_top
-    elif x_aruco < -0.02:
-        speedl = speedl + on_top
-        speedr = speedr - on_top
+    #reducing velocity at the last centimeters
+    pass
     return speedl,speedr,distance,x
 
 

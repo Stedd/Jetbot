@@ -65,6 +65,7 @@ def findandpickberry(cap,framerate):
     secondtry =False
     tic = time.time()
     while True:
+        berry_far_away = False
         img = cam.get_calibrated_img(cap)
 
         if x_old == int(720/2) and y_old == int(540-100):
@@ -74,7 +75,15 @@ def findandpickberry(cap,framerate):
         #x,area,y = find.berryAI(img)
         #x,area,y = find.berry_old(img)
 
+        if area > 0:
+            berry_far_away = True
+
         area = int(area/10000)
+
+        if area == 0 and berry_far_away == True:
+            area = 1
+        berry_far_away = False
+        
         if area > 600:
             area = 600
         if area == 0:   #nothing found
@@ -148,26 +157,40 @@ def findandpickberry(cap,framerate):
 
 def drivetomarker(cap,id,desired_distance):
     #Settings
-    drivingspeed = 100 
+    drivingspeed = 80 
 
     x_old = int(720/2)
     speedl,speedr,distance,x = ID.vel_to_marker(cap,id,desired_distance,x_old)
-    while distance > desired_distance + 0.005 or distance < desired_distance - 0.1:
+    while distance > desired_distance + 0.01 or distance < desired_distance - 0.01:
         speedl = speedl*(drivingspeed/100)
         speedr = speedr*(drivingspeed/100)
         motor.drive_l(speedl)
         motor.drive_r(speedr)
         speedl,speedr,distance,x = ID.vel_to_marker(cap,id,desired_distance,x_old)
         print(distance)
-        if x == int(720/2) and y == int(540-100): #nothing found
+        if x == int(720/2): #nothing found
             pass
         else:
             x_old = x
     return True
 
+##Testfunctions
+def testarucopositioning(cap):
+    i = 1.49 #setpoint
+    while i > 0.26:
+        if drivetomarker(cap,1,i) == True:
+            #left()
+            print("Done")
+            motor.drive(0)
+            time.sleep(1)
+            i = i-0.27
+
+
 #################################################################################################
 ########################### BEGIN OF PROGRAM ######################################################
 #################################################################################################
+
+
 
 
 
@@ -178,19 +201,22 @@ pick.armdown()
 cap = cam.opencam(framerate)
 if cap.isOpened():
     try:
+        while True:
+            findandpickberry(cap,framerate)
+            time.sleep(3)
         ## MAIN Program is here ##
-        #while collectedberrys<2:
+        #while collectedberrys<8:
             #if findandpickberry(cap,framerate) == True:
             #    collectedberrys = collectedberrys+1    
             #driveback()
-        if drivetomarker(cap,1,0.27) == True:
-            left()
+
             #x,area,y = find.firstImage(cam.get_calibrated_img(cap))
             #    if area/10000 > Size_threshhold: # red berry on this bush
             #        if findandpickberry(cap,framerate) == True:
             #            collectedberrys = collectedberrys+1  
             #    else: # green berry on this bush
             #            right()
+
     except KeyboardInterrupt:
         end(cap)
         pass
