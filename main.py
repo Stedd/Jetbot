@@ -160,7 +160,8 @@ def findandpickberry(cap,framerate):
 
 def vel_to_marker(cap,id,desired_distance,x_old):
     #Settings
-    on_top = 15
+    on_top = 10
+    distancetoline_Limit = 0.05 # in m
     x,y,distance,x_aruco = ID.getarucoPosition(cap,id)
     x = int(x)
     y = int(y)
@@ -172,18 +173,24 @@ def vel_to_marker(cap,id,desired_distance,x_old):
             speedl,speedr = vel_control.followball(x,y,x_old)
     elif distance == 0 and x_old != int(720/2): #nothing found
         speedl,speedr = vel_control.followball(x,y,x_old)
-        speedl = speedl/2
-        speedr = speedr/2
+        speedl = speedl/1.5
+        speedr = speedr/1.5
     else:   #too close
         speedl = -30
         speedr = -30
     #small enhancement to get to the middle line faster
-    if x_aruco > 0.05:
+    if x_aruco > distancetoline_Limit and x < 620:
         speedr = speedr - on_top
         speedl = speedl + on_top
-    elif x_aruco < -0.05:
+        if x_aruco > distancetoline_Limit*2:
+            speedr = speedr - on_top
+            speedl = speedl + on_top
+    elif x_aruco < -distancetoline_Limit and x > 100:
         speedr = speedr + on_top
         speedl = speedl - on_top
+        if x_aruco < -distancetoline_Limit*2:
+            speedr = speedr + on_top
+            speedl = speedl - on_top
     #reducing velocity at the last centimeters
     pass
     return speedl,speedr,distance,x
