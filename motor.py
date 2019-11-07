@@ -3,6 +3,7 @@
 import Adafruit_PCA9685
 import sys, termios, tty, os
 
+print("init motor control")
 # Class for the motor driver card
 class MotorDriver():
     def __init__(self, i2cbus, frequency=50):

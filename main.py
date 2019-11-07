@@ -45,7 +45,7 @@ def findandpickberry(cap,framerate):
     drivingspeed = 60 #60 or 85 # in %        
     pickingspeed = 20000 # speed of the arm 
     agg = 4 #4 #aggressitivity for picking # the safer the lower
-    supersavedrivingspeed = 5 # in %
+    supersavedrivingspeed = 10 # in %
     supersave_agg = 0
     #testedsetting: 
     # 80,200,5 works
@@ -54,7 +54,7 @@ def findandpickberry(cap,framerate):
     # 90,3500,15 works better than 100
     
     #developersettings
-    devmode = 1 #1 for output of stream and more information
+    devmode = 0 #always 0, 1 for output of stream and more information
 
     if devmode == 1:
         drivingspeed = drivingspeed/4
@@ -83,7 +83,7 @@ def findandpickberry(cap,framerate):
         if area == 0 and berry_far_away == True:
             area = 1
         berry_far_away = False
-        
+
         if area > 600:
             area = 600
         if area == 0:   #nothing found
@@ -99,7 +99,9 @@ def findandpickberry(cap,framerate):
             cv2.imshow('Calibrated camera',img)
 
         print("area: ",area, " x: ",x, " Y: ", y, "  | {:1.0f} %% vel left | {:2.0f} %% vel right " .format(speedl, speedr))
-
+        if secondtry == True:
+            print("second try:safe mode")
+        
         if secondtry == False:
             speedl = speedl*(drivingspeed/100)
             speedr = speedr*(drivingspeed/100)
@@ -131,6 +133,7 @@ def findandpickberry(cap,framerate):
                 print("FAILED picking, trying again")
             else:
                 secondtry = False
+                print('PICKED berry')
                 return True
             #end(cap)
         elif (abs(speedl) <= agg and abs(speedr) <= agg and area != 0 and secondtry == False) or (abs(speedl) == supersave_agg and abs(speedr) == supersave_agg and area != 0):
@@ -155,18 +158,52 @@ def findandpickberry(cap,framerate):
             print((toc - tic)*1000, ' ms')
         tic = time.time()
 
+def vel_to_marker(cap,id,desired_distance,x_old):
+    #Settings
+    on_top = 15
+    x,y,distance,x_aruco = ID.getarucoPosition(cap,id)
+    x = int(x)
+    y = int(y)
+    if x > 720:
+        x = 720
+    if y > 540:
+        y = 540    
+    if distance > desired_distance: #normal usage
+            speedl,speedr = vel_control.followball(x,y,x_old)
+    elif distance == 0 and x_old != int(720/2): #nothing found
+        speedl,speedr = vel_control.followball(x,y,x_old)
+        speedl = speedl/2
+        speedr = speedr/2
+    else:   #too close
+        speedl = -30
+        speedr = -30
+    #small enhancement to get to the middle line faster
+    if x_aruco > 0.05:
+        speedr = speedr - on_top
+        speedl = speedl + on_top
+    elif x_aruco < -0.05:
+        speedr = speedr + on_top
+        speedl = speedl - on_top
+    #reducing velocity at the last centimeters
+    pass
+    return speedl,speedr,distance,x
+
+
+
+
+
 def drivetomarker(cap,id,desired_distance):
     #Settings
     drivingspeed = 80 
 
     x_old = int(720/2)
-    speedl,speedr,distance,x = ID.vel_to_marker(cap,id,desired_distance,x_old)
+    speedl,speedr,distance,x = vel_to_marker(cap,id,desired_distance,x_old)
     while distance > desired_distance + 0.01 or distance < desired_distance - 0.01:
         speedl = speedl*(drivingspeed/100)
         speedr = speedr*(drivingspeed/100)
         motor.drive_l(speedl)
         motor.drive_r(speedr)
-        speedl,speedr,distance,x = ID.vel_to_marker(cap,id,desired_distance,x_old)
+        speedl,speedr,distance,x = vel_to_marker(cap,id,desired_distance,x_old)
         print(distance)
         if x == int(720/2): #nothing found
             pass
@@ -175,10 +212,10 @@ def drivetomarker(cap,id,desired_distance):
     return True
 
 ##Testfunctions
-def testarucopositioning(cap):
+def testarucopositioning(cap,ID):
     i = 1.49 #setpoint
     while i > 0.26:
-        if drivetomarker(cap,1,i) == True:
+        if drivetomarker(cap,ID,i) == True:
             #left()
             print("Done")
             motor.drive(0)
@@ -190,7 +227,7 @@ def testarucopositioning(cap):
 ########################### BEGIN OF PROGRAM ######################################################
 #################################################################################################
 
-
+print("Program start")
 
 
 
@@ -202,8 +239,9 @@ cap = cam.opencam(framerate)
 if cap.isOpened():
     try:
         while True:
-            findandpickberry(cap,framerate)
-            time.sleep(3)
+            testarucopositioning(cap,1)
+        #    findandpickberry(cap,framerate)
+        #    time.sleep(3)
         ## MAIN Program is here ##
         #while collectedberrys<8:
             #if findandpickberry(cap,framerate) == True:

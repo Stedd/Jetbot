@@ -2,6 +2,8 @@ import scipy.io
 X_max = 720
 Y_max = 540
 
+print("init velocity control")
+
 ##import line vel_function
 #leftline = scipy.io.loadmat('/home/jetbot/state_of_art_Software/calibration_files/lineleft.mat')
 #rightline = scipy.io.loadmat('/home/jetbot/state_of_art_Software/calibration_files/lineright.mat')

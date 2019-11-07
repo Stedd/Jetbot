@@ -2,7 +2,9 @@ import cv2
 import cv2.aruco as aruco 
 import numpy as np
 import camera as cam
-import vel_control as vel_control
+
+print("init Aruco-management")
+
 devmode = 0
 
 # Set up aruco dictionary for 4X4 arucos
@@ -51,38 +53,4 @@ def getarucoPosition(cap,aruco_id):
         # Show arucos on image
         cv2.imshow('aruco Test', img)
     return x,y,distance,x_aruco
-
-def vel_to_marker(cap,id,desired_distance,x_old):
-
-    #Settings
-    on_top = 10
-
-    x,y,distance,x_aruco = getarucoPosition(cap,id)
-    x = int(x)
-    y = int(y)
-    if x > 720:
-        x = 720
-    if y > 540:
-        y = 540    
-    if distance > desired_distance: #normal usage
-            speedl,speedr = vel_control.followball(x,y,x_old)
-    elif distance == 0 and x_old != int(720/2): #nothing found
-        speedl,speedr = vel_control.followball(x,y,x_old)
-        speedl = speedl/2
-        speedr = speedr/2
-    else:   #too close
-        speedl = -20
-        speedr = -20
-    #small enhancement to get to the middle line faster
-    if x_aruco > 0.05:
-        speedr = speedr - on_top
-        speedl = speedl + on_top
-    elif x_aruco < -0.05:
-        speedr = speedr + on_top
-        speedl = speedl - on_top
-    #reducing velocity at the last centimeters
-    pass
-    return speedl,speedr,distance,x
-
-
 

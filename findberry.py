@@ -3,6 +3,7 @@ import numpy as np
 #for AI
 import Yolov3_tiny_inference as yolo
 
+print("init CV")
 #for AI
 #Load classes
 with open('calibration_files/berries_labels.txt', 'r') as f:
@@ -14,6 +15,8 @@ yolov3Inference = yolo.Yolov3Inference(onnx_name='yolov3-tiny.onnx')
 
 
 devmode =0
+
+
 if devmode ==1:
     cv2.namedWindow('cropped_image', cv2.WINDOW_NORMAL)
 
