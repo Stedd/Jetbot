@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+print("----initializing----")
 import cv2
 import time
 import camera as cam
@@ -9,9 +10,10 @@ import vel_control as vel_control
 import findaruco as ID
 
 #Settings
-turningtime = 1
+turningtime = 0.5*2
 Size_threshhold = 50
-turning_distance = 0.05 #m
+turning_distance = 0.05 #meter
+driveback_time = 0.35 #seconds
 
 #developersettings
 framerate = 5 #hz
@@ -24,19 +26,25 @@ def end(cap):
     cv2.destroyAllWindows()  # Close all windows
 
 def right():
-    motor.drive_l(30)
-    motor.drive_r(-100)
+    #motor.drive_l(30)
+    #motor.drive_r(-100)
+    motor.drive_l(15)
+    motor.drive_r(-50)
     time.sleep(turningtime)
+    motor.drive(0)
 
 def left():
-    motor.drive_l(-30)
-    motor.drive_r(100)
+    #motor.drive_l(-30)
+    #motor.drive_r(100)
+    motor.drive_l(-15)
+    motor.drive_r(50)
     time.sleep(turningtime)
+    motor.drive(0)
 
 def driveback():
     motor.drive_l(-100)
     motor.drive_r(-100)
-    time.sleep(0.2)
+    time.sleep(driveback_time)
     right()
     motor.drive(0)
 
@@ -161,6 +169,7 @@ def findandpickberry(cap):
 
 def checkthisbush(cap):
     left()
+    time.sleep(0.5)
     x,area,y = find.firstImage(cam.get_calibrated_img(cap))
     if area/10000 > Size_threshhold: # red berry on this bush
         if findandpickberry(cap) == True: #pick it
@@ -218,6 +227,8 @@ def drivetomarker(cap,id,desired_distance):
     drivingspeed = 80 
 
     x_old = int(720/2)
+    last_distance = 0
+    newlylost = True
     speedl,speedr,distance,x = vel_to_marker(cap,id,desired_distance,x_old)
     while distance > desired_distance + 0.01 or distance < desired_distance - 0.01:
         speedl = speedl*(drivingspeed/100)
@@ -227,9 +238,41 @@ def drivetomarker(cap,id,desired_distance):
         speedl,speedr,distance,x = vel_to_marker(cap,id,desired_distance,x_old)
         print("distance to arucomarker:" + str(distance))
         if x == int(720/2): #nothing found
-            pass
+            if newlylost == True:
+                timelost = 0
+                tic = time.time()
+                newlylost = False
+            if timelost < 5000:
+                toc = time.time()
+                timelost = (toc - tic)*1000 #ms
+                if last_distance > 1 and x_old > 720/2: #lost it to the right on a distance bigger than 1 meter
+                    print("in a far distance to the right since ml: " + str(timelost))
+                    speedl = 25 #turn right
+                    speedr = 0 
+                    print("searching 1")
+                    if timelost > 1500: # turn the other way
+                        print("searching 2")
+                        speedr = 0
+                        speedl = 25 
+                    elif timelost > 4000:
+                        print("searching 3")
+                        speedr = 0 
+                        speedl = 10
+                elif last_distance > 1 and x_old < 720/2: #lost it to the left on a distance bigger than 1 meter
+                    speedl = 0 #turn left
+                    speedr = 25 
+                    if timelost > 1000: # turn the other way
+                        speedr = 25
+                        speedl = 0 
+                    elif timelost > 2500:
+                        speedr = 10 
+                        speedl = 0
+
         else:
+            newlylost = True
             x_old = x
+        if distance != 0:
+            last_distance = distance
     return True
 
 def pick_all_in_line(cap,ID,point):
@@ -237,11 +280,11 @@ def pick_all_in_line(cap,ID,point):
     ## Settings
     distance_to_next_bush = 0.27
 
-
     picked_berrys = 0
     while point > 0.26:
         if drivetomarker(cap,ID,point) == True:
-             if checkthisbush(cap) == True:
+            motor.drive(0)
+            if checkthisbush(cap) == True:
                 picked_berrys = picked_berrys +1
         point = point-distance_to_next_bush
     return picked_berrys
@@ -257,7 +300,7 @@ def testrightleft():
 #################################################################################################
 ########################### BEGIN OF PROGRAM ######################################################
 #################################################################################################
-print("Program start")
+print("----- Program start -----")
 
 
 
@@ -269,16 +312,18 @@ cap = cam.opencam(framerate)
 
 if cap.isOpened():
     try:
-        testrightleft()
         ## MAIN Program is here ##
-        start_point = ((5*27+14+10)/100) - turning_distance#setpoint
+        start_point = ((5*27+14+10)/100) + turning_distance#setpoint
         collectedberrys = collectedberrys + pick_all_in_line(cap,1,start_point)
-        left()
-        if drivetomarker(cap,2,0.27-turning_distance) == True:
+        if drivetomarker(cap,1,0.27+turning_distance) == True:
             left()
-        start_point = ((5*27)/100) - turning_distance#setpoint
+        if drivetomarker(cap,2,0.27+turning_distance) == True:
+            left()
+        start_point = ((5*27)/100) + turning_distance#setpoint
         collectedberrys = collectedberrys + pick_all_in_line(cap,3,start_point)
-        print(str(collectedberrys) + " Berrys picked")
     except KeyboardInterrupt:
         end(cap)
 end(cap)
+print("----- END OF PROGRAM -----")
+print(str(collectedberrys) + " Berrys picked")
+print("---------------------------")

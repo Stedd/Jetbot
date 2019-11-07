@@ -1,6 +1,9 @@
+print("init arm servo control")
 import sys, termios, tty, os, time
 import Adafruit_PCA9685
 import time
+
+
 
 i2cbus = 1
 frequency = 50 # The contiuous servo motors require 50 Hz

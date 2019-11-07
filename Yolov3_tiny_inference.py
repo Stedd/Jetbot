@@ -59,6 +59,7 @@ from Yolov3_tiny_data_processing_v2 import PreprocessYOLO, PostprocessYOLO, ALL_
 import sys, os
 import common
 
+
 TRT_LOGGER = trt.Logger()
 
 class Yolov3Inference():
@@ -160,7 +161,7 @@ class Yolov3Inference():
 
         if os.path.exists(engine_file_path):
             # If a serialized engine exists, use it instead of building an engine.
-            print("Reading engine from file {}".format(engine_file_path))
+            print("          Reading engine from file {}".format(engine_file_path))
             with open(engine_file_path, "rb") as f, trt.Runtime(TRT_LOGGER) as runtime:
                 return runtime.deserialize_cuda_engine(f.read())
         else:

@@ -1,9 +1,11 @@
+print("init CV")
 import cv2
 import numpy as np
 #for AI
+print("     init AI")
 import Yolov3_tiny_inference as yolo
 
-print("init CV")
+
 #for AI
 #Load classes
 with open('calibration_files/berries_labels.txt', 'r') as f:

@@ -1,8 +1,9 @@
 # Imports
+print("init camera control")
 import cv2
 import numpy as np
 
-print("init camera control")
+
 #Size of image
 im_height = 540
 im_width = 720

@@ -1,9 +1,10 @@
+print("init Aruco-management")
 import cv2
 import cv2.aruco as aruco 
 import numpy as np
 import camera as cam
 
-print("init Aruco-management")
+
 
 devmode = 0
 
