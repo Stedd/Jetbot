@@ -196,6 +196,9 @@ def vel_to_marker(cap,id,desired_distance,x_old):
     #reducing velocity at the last centimeters
     pass
     #reduccing velocity at high distance to not loose the marker in the image
+    if distance > 1 and abs(speedl-speedr) > 20:
+        speedl = speedl * 0.6
+        speedr = speedr * 0.6
     return speedl,speedr,distance,x
 
 def drivetomarker(cap,id,desired_distance):
