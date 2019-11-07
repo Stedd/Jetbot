@@ -161,7 +161,7 @@ def findandpickberry(cap,framerate):
 def vel_to_marker(cap,id,desired_distance,x_old):
     #Settings
     on_top = 10
-    distancetoline_Limit = 0.05 # in m
+    distancetoline_Limit = 0.06 # in m
     x,y,distance,x_aruco = ID.getarucoPosition(cap,id)
     x = int(x)
     y = int(y)
@@ -179,25 +179,24 @@ def vel_to_marker(cap,id,desired_distance,x_old):
         speedl = -30
         speedr = -30
     #small enhancement to get to the middle line faster
-    if x_aruco > distancetoline_Limit and x < 620:
+    #if speedl < 0 and speedl <0:
+    #    on_top = -on_top 
+    if x_aruco > distancetoline_Limit and x < 720-120:
         speedr = speedr - on_top
         speedl = speedl + on_top
         if x_aruco > distancetoline_Limit*2:
-            speedr = speedr - on_top
-            speedl = speedl + on_top
-    elif x_aruco < -distancetoline_Limit and x > 100:
+            speedr = speedr - on_top/2
+            speedl = speedl + on_top/2
+    elif x_aruco < -distancetoline_Limit and x > 120:
         speedr = speedr + on_top
         speedl = speedl - on_top
         if x_aruco < -distancetoline_Limit*2:
-            speedr = speedr + on_top
-            speedl = speedl - on_top
+            speedr = speedr + on_top/2
+            speedl = speedl - on_top/2
     #reducing velocity at the last centimeters
     pass
+    #reduccing velocity at high distance to not loose the marker in the image
     return speedl,speedr,distance,x
-
-
-
-
 
 def drivetomarker(cap,id,desired_distance):
     #Settings
@@ -211,7 +210,7 @@ def drivetomarker(cap,id,desired_distance):
         motor.drive_l(speedl)
         motor.drive_r(speedr)
         speedl,speedr,distance,x = vel_to_marker(cap,id,desired_distance,x_old)
-        print(distance)
+        print("distance to arucomarker:" + str(distance))
         if x == int(720/2): #nothing found
             pass
         else:
@@ -233,7 +232,6 @@ def testarucopositioning(cap,ID):
 #################################################################################################
 ########################### BEGIN OF PROGRAM ######################################################
 #################################################################################################
-
 print("Program start")
 
 
@@ -241,8 +239,9 @@ print("Program start")
 collectedberrys = 0
 motor.drive(0)
 pick.armdown()
-
+print("opening camera stream")
 cap = cam.opencam(framerate)
+
 if cap.isOpened():
     try:
         while True:
