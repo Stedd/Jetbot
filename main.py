@@ -9,8 +9,9 @@ import vel_control as vel_control
 import findaruco as ID
 
 #Settings
-turningtime = 0.3
-Size_threshhold = 100
+turningtime = 1
+Size_threshhold = 50
+turning_distance = 0.05 #m
 
 #developersettings
 framerate = 5 #hz
@@ -23,13 +24,13 @@ def end(cap):
     cv2.destroyAllWindows()  # Close all windows
 
 def right():
-    motor.drive_l(-50)
+    motor.drive_l(30)
     motor.drive_r(-100)
     time.sleep(turningtime)
 
 def left():
-    motor.drive_l(-100)
-    motor.drive_r(-50)
+    motor.drive_l(-30)
+    motor.drive_r(100)
     time.sleep(turningtime)
 
 def driveback():
@@ -40,7 +41,7 @@ def driveback():
     motor.drive(0)
 
 
-def findandpickberry(cap,framerate):
+def findandpickberry(cap):
     #Settings
     drivingspeed = 60 #60 or 85 # in %        
     pickingspeed = 20000 # speed of the arm 
@@ -63,7 +64,7 @@ def findandpickberry(cap,framerate):
     x_old = int(720/2) 
     reachedberry = False
     secondtry =False
-    tic = time.time()
+    #tic = time.time()
     while True:
         berry_far_away = False
         img = cam.get_calibrated_img(cap)
@@ -149,14 +150,25 @@ def findandpickberry(cap,framerate):
             end(cap)
             break  # Breaks out of the while loop
                 #forcing to framerate
-        toc= time.time()
-        while((toc - tic)<(1/(framerate+1))):
-            time.sleep(0.01)
-            print("framerate can be higher")
-            toc = time.time()
-        if devmode==1:
-            print((toc - tic)*1000, ' ms')
-        tic = time.time()
+        #toc= time.time()
+        #while((toc - tic)<(1/(framerate+1))):
+        #    time.sleep(0.01)
+        #    print("framerate can be higher")
+        #    toc = time.time()
+        #if devmode==1:
+        #    print((toc - tic)*1000, ' ms')
+        #tic = time.time()
+
+def checkthisbush(cap):
+    left()
+    x,area,y = find.firstImage(cam.get_calibrated_img(cap))
+    if area/10000 > Size_threshhold: # red berry on this bush
+        if findandpickberry(cap) == True: #pick it
+            driveback()
+            return True
+    else: # green berry on this bush
+        right()
+        return False
 
 def vel_to_marker(cap,id,desired_distance,x_old):
     #Settings
@@ -220,18 +232,28 @@ def drivetomarker(cap,id,desired_distance):
             x_old = x
     return True
 
-##Testfunctions
-def testarucopositioning(cap,ID):
-    i = 1.49 #setpoint
-    while i > 0.26:
-        if drivetomarker(cap,ID,i) == True:
-            #left()
-            print("Done")
-            motor.drive(0)
-            time.sleep(1)
-            i = i-0.27
+def pick_all_in_line(cap,ID,point):
+
+    ## Settings
+    distance_to_next_bush = 0.27
 
 
+    picked_berrys = 0
+    while point > 0.26:
+        if drivetomarker(cap,ID,point) == True:
+             if checkthisbush(cap) == True:
+                picked_berrys = picked_berrys +1
+        point = point-distance_to_next_bush
+    return picked_berrys
+
+def testrightleft():
+    while True:
+        right()
+        motor.drive(0)
+        time.sleep(2)
+        left()
+        motor.drive(0)
+        time.sleep(2)
 #################################################################################################
 ########################### BEGIN OF PROGRAM ######################################################
 #################################################################################################
@@ -247,24 +269,16 @@ cap = cam.opencam(framerate)
 
 if cap.isOpened():
     try:
-        while True:
-            testarucopositioning(cap,1)
-        #    findandpickberry(cap,framerate)
-        #    time.sleep(3)
+        testrightleft()
         ## MAIN Program is here ##
-        #while collectedberrys<8:
-            #if findandpickberry(cap,framerate) == True:
-            #    collectedberrys = collectedberrys+1    
-            #driveback()
-
-            #x,area,y = find.firstImage(cam.get_calibrated_img(cap))
-            #    if area/10000 > Size_threshhold: # red berry on this bush
-            #        if findandpickberry(cap,framerate) == True:
-            #            collectedberrys = collectedberrys+1  
-            #    else: # green berry on this bush
-            #            right()
-
+        start_point = ((5*27+14+10)/100) - turning_distance#setpoint
+        collectedberrys = collectedberrys + pick_all_in_line(cap,1,start_point)
+        left()
+        if drivetomarker(cap,2,0.27-turning_distance) == True:
+            left()
+        start_point = ((5*27)/100) - turning_distance#setpoint
+        collectedberrys = collectedberrys + pick_all_in_line(cap,3,start_point)
+        print(str(collectedberrys) + " Berrys picked")
     except KeyboardInterrupt:
         end(cap)
-        pass
 end(cap)
