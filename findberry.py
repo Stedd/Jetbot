@@ -36,7 +36,9 @@ def draw_prediction(img, class_id, confidence, x, y, x_plus_w, y_plus_h):
 
 def firstImage(img):
     # blobdetector
+    pass
     # get Data of BIGGEST Strawberry
+    pass
     X,Area,Y = berry(img,int(720/2),int(540-100))
     #X,Area,Y = berryAI(img)
     #if found something
