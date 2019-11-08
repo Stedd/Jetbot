@@ -172,10 +172,12 @@ def checkthisbush(cap):
     time.sleep(0.5)
     x,area,y = find.firstImage(cam.get_calibrated_img(cap))
     if area/10000 > Size_threshhold: # red berry on this bush
+        print("red Berry found!")
         if findandpickberry(cap) == True: #pick it
             driveback()
             return True
     else: # green berry on this bush
+        print("green berry")
         right()
         return False
 
@@ -227,14 +229,10 @@ def drivetomarker(cap,id,desired_distance):
     drivingspeed = 80 
 
     x_old = int(720/2)
+    distance = 0
     last_distance = 0
     newlylost = True
-    speedl,speedr,distance,x = vel_to_marker(cap,id,desired_distance,x_old)
     while distance > desired_distance + 0.01 or distance < desired_distance - 0.01:
-        speedl = speedl*(drivingspeed/100)
-        speedr = speedr*(drivingspeed/100)
-        motor.drive_l(speedl)
-        motor.drive_r(speedr)
         speedl,speedr,distance,x = vel_to_marker(cap,id,desired_distance,x_old)
         print("distance to arucomarker:" + str(distance))
         if x == int(720/2): #nothing found
@@ -245,34 +243,42 @@ def drivetomarker(cap,id,desired_distance):
             if timelost < 5000:
                 toc = time.time()
                 timelost = (toc - tic)*1000 #ms
-                if last_distance > 1 and x_old > 720/2: #lost it to the right on a distance bigger than 1 meter
-                    print("in a far distance to the right since ml: " + str(timelost))
-                    speedl = 25 #turn right
-                    speedr = 0 
-                    print("searching 1")
-                    if timelost > 1500: # turn the other way
-                        print("searching 2")
-                        speedr = 0
-                        speedl = 25 
-                    elif timelost > 4000:
-                        print("searching 3")
+                print("lost since " + str(timelost) + " ms")
+                if x_old > 720/2+100: #lost it to the right
+                    if timelost <= 1000:
+                        speedl = 25 #turn right
                         speedr = 0 
-                        speedl = 10
-                elif last_distance > 1 and x_old < 720/2: #lost it to the left on a distance bigger than 1 meter
-                    speedl = 0 #turn left
-                    speedr = 25 
-                    if timelost > 1000: # turn the other way
-                        speedr = 25
-                        speedl = 0 
-                    elif timelost > 2500:
-                        speedr = 10 
+                        print("search sequence 1")
+                    elif timelost < 3000: # turn the other way
+                        print("search sequence 2")
                         speedl = 0
-
+                        speedr = 25 
+                    else:
+                        print("search sequence3")
+                        speedl = 10 
+                        speedr = 0
+                elif x_old < 720/2-100: #lost it to the left
+                    if timelost <= 1000:
+                        speedl = 0 #turn left
+                        speedr = 25 
+                    elif timelost < 3000: # turn the other way
+                        speedl = 25
+                        speedr = 0 
+                    else:
+                        speedl = 10 
+                        speedr = 0
+                else: #lost in the middle
+                    speedl = -5
+                    speedr = -5
         else:
             newlylost = True
             x_old = x
         if distance != 0:
             last_distance = distance
+        speedl = speedl*(drivingspeed/100)
+        speedr = speedr*(drivingspeed/100)
+        motor.drive_l(speedl)
+        motor.drive_r(speedr)
     return True
 
 def pick_all_in_line(cap,ID,point):
@@ -284,8 +290,9 @@ def pick_all_in_line(cap,ID,point):
     while point > 0.26:
         if drivetomarker(cap,ID,point) == True:
             motor.drive(0)
-            if checkthisbush(cap) == True:
-                picked_berrys = picked_berrys +1
+            time.sleep(1.5)
+            #if checkthisbush(cap) == True:
+            #    picked_berrys = picked_berrys +1
         point = point-distance_to_next_bush
     return picked_berrys
 
