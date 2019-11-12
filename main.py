@@ -10,8 +10,8 @@ import vel_control as vel_control
 import findaruco as ID
 
 #Settings
-turningtime = 0.5*2
-Size_threshhold = 50
+turningtime = 0.425*2
+Size_threshhold = 25
 turning_distance = 0.05 #meter
 driveback_time = 0.35 #seconds
 
@@ -25,7 +25,7 @@ def end(cap):
     cam.closecam(cap)
     cv2.destroyAllWindows()  # Close all windows
 
-def right():
+def right_old():
     #motor.drive_l(30)
     #motor.drive_r(-100)
     motor.drive_l(15)
@@ -41,11 +41,34 @@ def left():
     time.sleep(turningtime)
     motor.drive(0)
 
+def halfright():
+    motor.drive_l(15)
+    motor.drive_r(-50)
+    time.sleep(turningtime/2)
+    motor.drive(0)
+
+def right1():
+    halfright()
+    time.sleep(1/framerate)
+    x,y,distance1,x_aruco = ID.getarucoPosition(cap,1)
+    if distance1 == 0:
+        time.sleep(1/framerate)
+        x,y,distance3,x_aruco = ID.getarucoPosition(cap,3)
+        if distance3 == 0:
+            halfright()
+            time.sleep(1/framerate)
+            x,y,distance1,x_aruco = ID.getarucoPosition(cap,1)
+            if distance1 == 0:
+                time.sleep(1/framerate)
+                x,y,distance3,x_aruco = ID.getarucoPosition(cap,3)
+                if distance3 == 0:
+                    halfright()
+
 def driveback():
     motor.drive_l(-100)
     motor.drive_r(-100)
     time.sleep(driveback_time)
-    right()
+    right1()
     motor.drive(0)
 
 
@@ -178,7 +201,7 @@ def checkthisbush(cap):
             return True
     else: # green berry on this bush
         print('\033[92m' + "green berry" + '\033[0m')
-        right()
+        right1()
         return False
 
 def vel_to_marker(cap,id,desired_distance,x_old):
@@ -232,7 +255,7 @@ def drivetomarker(cap,id,desired_distance):
     distance = 0
     last_distance = 0
     newlylost = True
-    while distance > desired_distance + 0.02 or distance < desired_distance - 0.02:
+    while distance > desired_distance + 0.015 or distance < desired_distance - 0.015:
         speedl,speedr,distance,x = vel_to_marker(cap,id,desired_distance,x_old)
         print("distance to arucomarker:" + str(distance))
         if x == int(720/2): #nothing found
@@ -311,7 +334,7 @@ def testrightleft():
 #################################################################################################
 print("----- Program start -----")
 
-
+#testrightleft()
 
 collectedberrys = 0
 motor.drive(0)
