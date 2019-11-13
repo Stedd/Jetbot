@@ -125,7 +125,6 @@ def berry(img,x_old,y_old):
     #extra code snippet for low strawberrys
     if Y in range(300,400) and X in range(320,400):
         Area = Area*1.2
-    pass
 
     return X,Area,Y
 
