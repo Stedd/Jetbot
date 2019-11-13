@@ -309,7 +309,7 @@ def drivetomarker(cap,id,desired_distance):
 def pick_all_in_line(cap,ID,point):
 
     ## Settings
-    distance_to_next_bush = 0.27
+    distance_to_next_bush = 0.17
 
     picked_berrys = 0
     for x in range(5):
@@ -351,7 +351,6 @@ cap = cam.opencam()
 
 if cap.isOpened():
     try:
-        camtest()
         ## MAIN Program is here ##
         start_point = ((5*27+14+10)/100) + turning_distance #setpoint
         collectedberrys = collectedberrys + pick_all_in_line(cap,1,start_point)
