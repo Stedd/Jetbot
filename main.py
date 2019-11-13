@@ -121,6 +121,9 @@ def findandpickberry(cap):
         if area == 0:   #nothing found
             speedl = 0  #don't move
             speedr = 0
+            x = int(720/2)
+            y = int(540-100)
+
         else:
             speedl, speedr = vel_control.followstrawberry(x,area,x_old)
 
