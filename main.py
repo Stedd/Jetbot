@@ -15,9 +15,9 @@ Size_threshhold = 25
 turning_distance = 0.05 #meter
 driveback_time = 0.35 #seconds
 
-#developersettings
-framerate = 5 #hz
 
+#developersettings
+framerate = 10 #hz
 
 def end(cap):    
     motor.drive(0)
@@ -329,6 +329,12 @@ def testrightleft():
         left()
         motor.drive(0)
         time.sleep(2)
+
+def camtest():
+    while True:
+        tic = time.time()
+        img = cam.get_calibrated_img(cap)
+        print("time of that frame in ms: " +str((time.time()-tic)*1000))
 #################################################################################################
 ########################### BEGIN OF PROGRAM ######################################################
 #################################################################################################
@@ -336,14 +342,16 @@ print("----- Program start -----")
 
 #testrightleft()
 
+
 collectedberrys = 0
 motor.drive(0)
 pick.armdown()
 print("opening camera stream")
-cap = cam.opencam(framerate)
+cap = cam.opencam()
 
 if cap.isOpened():
     try:
+        camtest()
         ## MAIN Program is here ##
         start_point = ((5*27+14+10)/100) + turning_distance #setpoint
         collectedberrys = collectedberrys + pick_all_in_line(cap,1,start_point)

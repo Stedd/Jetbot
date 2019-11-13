@@ -2,7 +2,9 @@
 print("init camera control")
 import cv2
 import numpy as np
+import time
 
+frame_rate = 10
 
 #Size of image
 im_height = 540
@@ -21,13 +23,14 @@ rvecs = data["rvecs"]
 tvecs = data["tvecs"]
 
 
+map1, map2 = cv2.initUndistortRectifyMap(mtx, dist, np.eye(3), mtx, (720, 540), cv2.CV_32FC1)
 
 def gstreamer_pipeline(
     capture_width=im_width,
     capture_height=im_height,
     display_width=im_width,
     display_height=im_height,
-    framerate=30,
+    framerate=60,
     flip_method=0,
 ):
     return (
@@ -49,9 +52,9 @@ def gstreamer_pipeline(
         )
     )
 
-def opencam(freq):
+def opencam():
     # Using default values in gstreamer_pipeline to capture video
-    cap = cv2.VideoCapture(gstreamer_pipeline(framerate=freq), cv2.CAP_GSTREAMER)
+    cap = cv2.VideoCapture(gstreamer_pipeline(), cv2.CAP_GSTREAMER)
     if cap.isOpened():
         return cap
     else:
@@ -70,14 +73,17 @@ def calibrateColor(img, gainmatrix):
     img[:] = results
 
 def get_calibrated_img(cam):
+    delay_compensation = 2 # if you face delays increase this number
+    #outputs images in ~ 40 ms with 1 and grows 10ms with each more
     if cam.isOpened():  
+        for i in range(0,int(delay_compensation)):
+            print("test")
             ret_val, img = cam.read()
-            #calibrate color
-            calibrateColor(img, gainmatrix)
-            
-            # Calibrate distortion
-            img = cv2.undistort(img, mtx, dist, None, mtx)
-
-            return img
+        #calibrate color
+        calibrateColor(img, gainmatrix)
+        # Calibrate distortion
+        #img = cv2.undistort(img, mtx, dist, None, mtx)
+        cv2.remap(img, map1, map2, cv2.INTER_LINEAR, img)
+        return img
     else:
         print("open camera first")
