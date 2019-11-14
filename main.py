@@ -91,7 +91,6 @@ def driveback(cap):
     safe_right(cap)
     motor.drive(0)
 
-
 def findandpickberry(cap):
     #Settings
     drivingspeed = 60 #60 or 85 # in %        
@@ -249,9 +248,6 @@ def vel_to_marker(cap,id,desired_distance,x_old):
     else:   #too close
         speedl = -30
         speedr = -30
-    #small enhancement to get to the middle line faster
-    #if speedl < 0 and speedl <0:
-    #    on_top = -on_top 
     if x_aruco > distancetoline_Limit and x < 720-120:
         speedr = speedr - on_top
         speedl = speedl + on_top
@@ -275,8 +271,7 @@ def vel_to_marker(cap,id,desired_distance,x_old):
 def drivetomarker(cap,id,desired_distance):
     #Settings
     drivingspeed = 60 
-    tolerance = 2/100
-
+    tolerance = 1/100 #+- in m
     x_old = int(720/2)
     distance = 0
     newlylost = True
@@ -329,9 +324,9 @@ def drivetomarker(cap,id,desired_distance):
         speedr = speedr*(drivingspeed/100)
         motor.drive_l(speedl)
         motor.drive_r(speedr)
-        if distance > desired_distance + tolerance or distance < desired_distance - tolerance and distancecorrect ==True:
+        if distance > desired_distance - tolerance and distance < desired_distance + tolerance and distancecorrect ==True:
             distancereached = True
-        elif distance > desired_distance + tolerance or distance < desired_distance - tolerance:
+        elif distance > desired_distance - tolerance and distance < desired_distance + tolerance:
             distancecorrect = True
         else:
             distancecorrect = False
@@ -379,13 +374,12 @@ motor.drive(0)
 pick.armdown()
 print("opening camera stream")
 cap = cam.opencam()
-while True:
-    img = cam.get_calibrated_img(cap)
-    print("")
-    x,y,distance1,x_aruco = ID.getarucoPosition(img,1)
-    print("distance: " + str(distance) + "x: " +str(x_aruco))
-    print("")
 if cap.isOpened():
+    while True:
+        for x in [20,30,40,50,60,70,80,90,100,110,120,130,140]:
+            if drivetomarker(cap,1,x/100) == True:
+                motor.drive(0)
+                time.sleep(2)
     try:
         ## MAIN Program is here ##
         start_point = ((5*17+14+10)/100) + turning_distance #setpoint
