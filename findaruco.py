@@ -1,5 +1,5 @@
 print("init Aruco-management")
-import cv2
+#import cv2
 import cv2.aruco as aruco 
 import numpy as np
 
@@ -35,6 +35,7 @@ def getarucoPosition(img,aruco_id):
                 #calculate distance in meters
                 #distance = np.linalg.norm(tvecs[i])
                 distance =  tvecs[i][0][2]
+                distance = 0.8599*distance
                 #calculate the Pixe of the middle of the bottom line of the marker
                 y = (corners[i][0][3-1][2-1]+corners[i][0][4-1][2-1])/2
                 x = ((corners[i][0][3-1][1-1]-corners[i][0][4-1][1-1])/2)+corners[i][0][3-1][1-1]
@@ -50,7 +51,7 @@ def getarucoPosition(img,aruco_id):
                     print('Distance to marker ID {} is Norm: {}'.format(ids[i], np.linalg.norm(tvecs[i])))
         except:
             print('No arucos found')
-        # Show arucos on image
-        cv2.imshow('aruco Test', img)
+    print("tvecs: "+ str(tvecs))
+    print("rvecs: "+str(rvecs))
     return x,y,distance,x_aruco
 

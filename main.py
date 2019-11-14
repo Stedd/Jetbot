@@ -275,12 +275,14 @@ def vel_to_marker(cap,id,desired_distance,x_old):
 def drivetomarker(cap,id,desired_distance):
     #Settings
     drivingspeed = 60 
-    
+    tolerance = 2/100
+
     x_old = int(720/2)
     distance = 0
-    last_distance = 0
     newlylost = True
-    while distance > desired_distance + 0.015 or distance < desired_distance - 0.015:
+    distancereached = False
+    distancecorrect = False
+    while not distancereached:
         speedl,speedr,distance,x = vel_to_marker(cap,id,desired_distance,x_old)
         print("distance to arucomarker:" + str(distance))
         if x == int(720/2): #nothing found
@@ -323,12 +325,16 @@ def drivetomarker(cap,id,desired_distance):
         else:
             newlylost = True
             x_old = x
-        if distance != 0:
-            last_distance = distance
         speedl = speedl*(drivingspeed/100)
         speedr = speedr*(drivingspeed/100)
         motor.drive_l(speedl)
         motor.drive_r(speedr)
+        if distance > desired_distance + tolerance or distance < desired_distance - tolerance and distancecorrect ==True:
+            distancereached = True
+        elif distance > desired_distance + tolerance or distance < desired_distance - tolerance:
+            distancecorrect = True
+        else:
+            distancecorrect = False
     return True
 
 def pick_all_in_line(cap,ID,point):
@@ -373,6 +379,12 @@ motor.drive(0)
 pick.armdown()
 print("opening camera stream")
 cap = cam.opencam()
+while True:
+    img = cam.get_calibrated_img(cap)
+    print("")
+    x,y,distance1,x_aruco = ID.getarucoPosition(img,1)
+    print("distance: " + str(distance) + "x: " +str(x_aruco))
+    print("")
 if cap.isOpened():
     try:
         ## MAIN Program is here ##
