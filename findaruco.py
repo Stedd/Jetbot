@@ -2,7 +2,6 @@ print("init Aruco-management")
 import cv2
 import cv2.aruco as aruco 
 import numpy as np
-import camera as cam
 
 
 
@@ -18,12 +17,11 @@ data = np.load('/home/jetbot/state_of_art_Software/calibration_files/calib_param
 mtx = data["mtx"]
 dist = data["dist"]
 
-def getarucoPosition(cap,aruco_id):
+def getarucoPosition(img,aruco_id):
     distance = 0
     x = int(720/2)
     y = int(540-100)
     x_aruco = 0
-    img = cam.get_calibrated_img(cap)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)    
     # Identify arucos
     corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, arucoDict, parameters=parameters)

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 print("----initializing----")
-import cv2
+#import cv2
 import time
 import camera as cam
 import motor as motor
@@ -55,34 +55,40 @@ def halfright():
     time.sleep(turningtime_right/2)
     motor.drive(0)
 
-def safe_right():
+def safe_right(cap):
     right()
     time.sleep(a_moment)
-    x,y,distance1,x_aruco = ID.getarucoPosition(cap,1)
+    img = cam.get_calibrated_img(cap)
+    x,y,distance1,x_aruco = ID.getarucoPosition(img,1)
     if distance1 == 0:
         time.sleep(a_moment)
-        x,y,distance3,x_aruco = ID.getarucoPosition(cap,3)
+        img = cam.get_calibrated_img(cap)
+        x,y,distance3,x_aruco = ID.getarucoPosition(img,3)
         if distance3 == 0:
             halfright()
             time.sleep(a_moment)
-            x,y,distance1,x_aruco = ID.getarucoPosition(cap,1)
+            img = cam.get_calibrated_img(cap)
+            x,y,distance1,x_aruco = ID.getarucoPosition(img,1)
             if distance1 == 0:
                 time.sleep(a_moment)
-                x,y,distance3,x_aruco = ID.getarucoPosition(cap,3)
+                img = cam.get_calibrated_img(cap)
+                x,y,distance3,x_aruco = ID.getarucoPosition(img,3)
                 if distance3 == 0:
                     left()
-                    x,y,distance1,x_aruco = ID.getarucoPosition(cap,1)
+                    img = cam.get_calibrated_img(cap)
+                    x,y,distance1,x_aruco = ID.getarucoPosition(img,1)
                     if distance1 == 0:
                         time.sleep(a_moment)
-                        x,y,distance3,x_aruco = ID.getarucoPosition(cap,3)
+                        img = cam.get_calibrated_img(cap)
+                        x,y,distance3,x_aruco = ID.getarucoPosition(img,3)
                         if distance3 == 0:
                             halfright()
 
-def driveback():
+def driveback(cap):
     motor.drive_l(-100)
     motor.drive_r(-100)
     time.sleep(driveback_time)
-    safe_right()
+    safe_right(cap)
     motor.drive(0)
 
 
@@ -215,18 +221,19 @@ def checkthisbush(cap):
     if area/10000 > Size_threshhold: # red berry on this bush
         print("RED Berry found!")
         if findandpickberry(cap) == True: #pick it
-            driveback()
+            driveback(cap)
             return True
     else: # green berry on this bush
         print('\033[92m' + "green berry" + '\033[0m')
-        safe_right()
+        safe_right(cap)
         return False
 
 def vel_to_marker(cap,id,desired_distance,x_old):
     #Settings
     on_top = 10
     distancetoline_Limit = 0.06 # in m
-    x,y,distance,x_aruco = ID.getarucoPosition(cap,id)
+    img = cam.get_calibrated_img(cap)
+    x,y,distance,x_aruco = ID.getarucoPosition(img,id)
     x = int(x)
     y = int(y)
     if x > 720:
