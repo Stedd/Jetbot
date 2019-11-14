@@ -10,8 +10,9 @@ import vel_control as vel_control
 import findaruco as ID
 
 #Settings
-turningtime = 0.42*2
-Size_threshhold = 25
+turningtime_left = 0.37*2
+turningtime_right = turningtime_left+0.05
+Size_threshhold = 30
 turning_distance = 0.05 #meter
 driveback_time = 0.35 #seconds
 
@@ -28,7 +29,7 @@ def right():
     #motor.drive_r(-100)
     motor.drive_l(15)
     motor.drive_r(-50)
-    time.sleep(turningtime)
+    time.sleep(turningtime_right)
     motor.drive(0)
 
 def left():
@@ -36,7 +37,7 @@ def left():
     #motor.drive_r(100)
     motor.drive_l(-15)
     motor.drive_r(50)
-    time.sleep(turningtime)
+    time.sleep(turningtime_left)
     motor.drive(0)
 
 def left_to_bush():
@@ -44,14 +45,14 @@ def left_to_bush():
     #motor.drive_r(100)
     motor.drive_l(-15)
     motor.drive_r(50)
-    time.sleep(turningtime-0.1)
+    time.sleep(turningtime_left-0.1)
     motor.drive(0)
 
 
 def halfright():
     motor.drive_l(15)
     motor.drive_r(-50)
-    time.sleep(turningtime/2)
+    time.sleep(turningtime_right/2)
     motor.drive(0)
 
 def safe_right():
@@ -338,14 +339,14 @@ def pick_all_in_line(cap,ID,point):
         point = point-distance_to_next_bush
     return picked_berrys
 
-def testrightleft():
+def testleftright():
     while True:
-        right()
-        motor.drive(0)
-        time.sleep(2)
         left()
         motor.drive(0)
-        time.sleep(2)
+        time.sleep(0.5)
+        right()
+        motor.drive(0)
+        time.sleep(1)
 
 def camtest():
     while True:
