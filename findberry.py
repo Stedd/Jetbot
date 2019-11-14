@@ -23,7 +23,6 @@ if devmode ==1:
     cv2.namedWindow('cropped_image', cv2.WINDOW_NORMAL)
 
 
-
 def draw_prediction(img, class_id, confidence, x, y, x_plus_w, y_plus_h):
 
     label = str(classes[class_id])
@@ -35,11 +34,9 @@ def draw_prediction(img, class_id, confidence, x, y, x_plus_w, y_plus_h):
     cv2.putText(img, label, (x-10,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
 def firstImage(img):
-    # blobdetector
-    pass
-    # get Data of BIGGEST Strawberry
-    pass
-    X,Area,Y = berry(img,int(720/2),int(540-100))
+
+    X_start,Area,Y_start = berry_blob(img)
+    X,Area,Y = berry(img,X_start,Y_start)
     #X,Area,Y = berryAI(img)
     #if found something
         #X= biggest Blob X
@@ -51,6 +48,59 @@ def firstImage(img):
         #print('didnt find anything')
     #Area = Blobarea of biggest Blob
     return X,Area,Y
+
+def berry_blob(img):
+
+    ## usual preprocessing of the image
+    X = int(720/2)
+    Y = int(540-100)
+    Area = 0
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    #definingtherange of  Yellowcolor
+    lower_red = np.array([0,120,80])
+    upper_red = np.array([8,255,255])
+    mask1 = cv2.inRange(hsv, lower_red, upper_red)
+
+    #mask 2
+    lower_red = np.array([175,120,80])
+    upper_red = np.array([180,210,255])
+    mask2 = cv2.inRange(hsv, lower_red, upper_red)
+    mask_red = mask1 + mask2
+    
+    #open the mask
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
+    mask= cv2.morphologyEx(mask_red, cv2.MORPH_OPEN, kernel)
+    #close the mask
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(4,4))
+    mask = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
+    red = cv2.bitwise_not(mask)
+
+    ##create blobdetector
+
+    # Setup SimpleBlobDetector parameters
+    params = cv2.SimpleBlobDetector_Params()
+    params.filterByArea = False
+    #params.minArea = 200 #2700
+    params.filterByCircularity = False
+    #params.minCircularity = 0.4
+    params.filterByConvexity = False
+    #params.minConvexity = 0.3
+    params.filterByInertia = False
+    #params.minInertiaRatio = 0.4
+    #finally create it
+    detector = cv2.SimpleBlobDetector_create(params)         
+
+    ## Use blob detctor   
+    keypoints = detector.detect(red)
+    
+    ## search for values of the biggest blob
+    for i in range (len(keypoints)):    
+        if keypoints[i].size > Area:
+            X = keypoints[i].pt[0]
+            Y = keypoints[i].pt[1]
+            Area = keypoints[i].size
+
+    return int(X),Area,int(Y)
 
 
 def berry(img,x_old,y_old):
