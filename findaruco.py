@@ -20,6 +20,8 @@ dist = data["dist"]
 def getarucoPosition(img,aruco_id):
     distance = 0
     x = int(720/2)
+    x1 = 1
+    x2 = 719
     y = int(540-100)
     x_aruco = 0
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)    
@@ -39,7 +41,9 @@ def getarucoPosition(img,aruco_id):
                 distance = (distance+np.linalg.norm(tvecs))/2
                 #calculate the Pixe of the middle of the bottom line of the marker
                 y = (corners[i][0][3-1][2-1]+corners[i][0][4-1][2-1])/2
-                x = ((corners[i][0][3-1][1-1]-corners[i][0][4-1][1-1])/2)+corners[i][0][3-1][1-1]
+                x1 = corners[i][0][3-1][1-1]
+                x2 = corners[i][0][4-1][1-1]
+                x = ((x1-x2)/2)+x1
                 x_aruco = tvecs[i][0][0] 
     except:
         print('No arucos found')
@@ -52,5 +56,5 @@ def getarucoPosition(img,aruco_id):
                     print('Distance to marker ID {} is Norm: {}'.format(ids[i], np.linalg.norm(tvecs[i])))
         except:
             print('No arucos found')    
-    return x,y,distance,x_aruco
+    return x,y,distance,x_aruco,x1,x2
 

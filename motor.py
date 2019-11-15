@@ -60,7 +60,7 @@ leftmotor = Motor(motorDriver, 1)
 rightactuation_zero = 321
 right_fwd_start = 311
 right_bwd_start = 326
-right_fwd_max = 272
+right_fwd_max = 274 #272
 right_bwd_max = 363
 rightactuation_pos_range = right_bwd_max - right_bwd_start
 rightactuation_neg_range = right_fwd_start - right_fwd_max
@@ -69,7 +69,7 @@ leftactuation_zero = 321
 left_fwd_start = 326
 left_bwd_start = 311
 left_fwd_max = 363
-left_bwd_max = 275
+left_bwd_max = 275.5 #275
 leftactuation_pos_range = left_fwd_max - left_fwd_start
 leftactuation_neg_range = left_bwd_start - left_bwd_max
 

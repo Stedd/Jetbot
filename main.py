@@ -229,10 +229,10 @@ def checkthisbush(cap):
 
 def vel_to_marker(cap,id,desired_distance,x_old):
     #Settings
-    on_top = 10
-    distancetoline_Limit = 0.06 # in m
+    on_top = 15 #10
+    distancetoline_Limit = 0.06 # in m #0.06
     img = cam.get_calibrated_img(cap)
-    x,y,distance,x_aruco = ID.getarucoPosition(img,id)
+    x,y,distance,x_aruco,x1,x2 = ID.getarucoPosition(img,id)
     x = int(x)
     y = int(y)
     if x > 720:
@@ -248,30 +248,41 @@ def vel_to_marker(cap,id,desired_distance,x_old):
     else:   #too close
         speedl = -30
         speedr = -30
-    if x_aruco > distancetoline_Limit and x < 720-120:
+    if x_aruco > distancetoline_Limit and x2 < 720-20 and abs(distance - desired_distance) > 0.02:
         speedr = speedr - on_top
         speedl = speedl + on_top
         if x_aruco > distancetoline_Limit*2:
             speedr = speedr - on_top/2
             speedl = speedl + on_top/2
-    elif x_aruco < -distancetoline_Limit and x > 120:
+    elif x_aruco < -distancetoline_Limit and x1 > 20:
         speedr = speedr + on_top
         speedl = speedl - on_top
         if x_aruco < -distancetoline_Limit*2:
             speedr = speedr + on_top/2
             speedl = speedl - on_top/2
     #reducing velocity at the last centimeters
-    pass
-    #reduccing velocity at high distance to not loose the marker in the image
+    #4 cm
+    if abs(distance-desired_distance) < 0.04 :
+        speedl = speedl * 0.5
+        speedr = speedr * 0.5
+        #2cm
+        if abs(distance-desired_distance) < 0.02 :
+            speedl = speedl * 0.2
+            speedr = speedr * 0.2
+    #reduccing velocity at high distance and high turn rate to not loose the marker in the image
     if distance > 1 and abs(speedl-speedr) > 20:
-        speedl = speedl * 0.6
-        speedr = speedr * 0.6
+        speedl = speedl * 0.5
+        speedr = speedr * 0.5
+    print("")
+    print("x-value: "+str(x_aruco))
     return speedl,speedr,distance,x
 
 def drivetomarker(cap,id,desired_distance):
     #Settings
-    drivingspeed = 60 
+    drivingspeed = 100
     tolerance = 1/100 #+- in m
+
+
     x_old = int(720/2)
     distance = 0
     newlylost = True
@@ -280,6 +291,7 @@ def drivetomarker(cap,id,desired_distance):
     while not distancereached:
         speedl,speedr,distance,x = vel_to_marker(cap,id,desired_distance,x_old)
         print("distance to arucomarker:" + str(distance))
+      
         if x == int(720/2): #nothing found
             if newlylost == True:
                 timelost = 0
@@ -375,11 +387,6 @@ pick.armdown()
 print("opening camera stream")
 cap = cam.opencam()
 if cap.isOpened():
-    while True:
-        for x in [20,30,40,50,60,70,80,90,100,110,120,130,140]:
-            if drivetomarker(cap,1,x/100) == True:
-                motor.drive(0)
-                time.sleep(2)
     try:
         ## MAIN Program is here ##
         start_point = ((5*17+14+10)/100) + turning_distance #setpoint
