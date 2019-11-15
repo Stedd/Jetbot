@@ -73,7 +73,7 @@ def calibrateColor(img, gainmatrix):
     img[:] = results
 
 def get_calibrated_img(cam):
-    delay_compensation = 2 # if you face delays increase this number
+    delay_compensation = 6 # if you face delays increase this number
     #outputs images in ~ 40 ms with 1 and grows 10ms with each more
     if cam.isOpened():  
         for i in range(0,int(delay_compensation)):

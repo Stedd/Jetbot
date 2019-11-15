@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 print("----initializing----")
-#import cv2
+import cv2
 import time
 import camera as cam
 import motor as motor
@@ -16,7 +16,7 @@ Size_threshhold = 30
 turning_distance = 0.05 #meter
 driveback_time = 0.35 #seconds
 
-a_moment = 0.05
+a_moment = 0.01
 
 def end(cap):    
     motor.drive(0)
@@ -93,7 +93,7 @@ def driveback(cap):
 
 def findandpickberry(cap):
     #Settings
-    drivingspeed = 60 #60 or 85 # in %        
+    drivingspeed = 65 #60 or 85 # in %        
     pickingspeed = 20000 # speed of the arm 
     agg = 4 #4 #aggressitivity for picking # the safer the lower
     supersavedrivingspeed = 10 # in %
@@ -232,7 +232,7 @@ def vel_to_marker(cap,id,desired_distance,x_old):
     on_top = 15 #10
     distancetoline_Limit = 0.06 # in m #0.06
     img = cam.get_calibrated_img(cap)
-    x,y,distance,x_aruco,x1,x2 = ID.getarucoPosition(img,id)
+    x,y,distance,x_aruco = ID.getarucoPosition(img,id)
     x = int(x)
     y = int(y)
     if x > 720:
@@ -248,13 +248,13 @@ def vel_to_marker(cap,id,desired_distance,x_old):
     else:   #too close
         speedl = -30
         speedr = -30
-    if x_aruco > distancetoline_Limit and x2 < 720-20 and abs(distance - desired_distance) > 0.02:
+    if x_aruco > distancetoline_Limit and x < 720-80 and abs(distance - desired_distance) > 0.02:
         speedr = speedr - on_top
         speedl = speedl + on_top
         if x_aruco > distancetoline_Limit*2:
             speedr = speedr - on_top/2
             speedl = speedl + on_top/2
-    elif x_aruco < -distancetoline_Limit and x1 > 20:
+    elif x_aruco < -distancetoline_Limit and x > 80:
         speedr = speedr + on_top
         speedl = speedl - on_top
         if x_aruco < -distancetoline_Limit*2:
@@ -378,9 +378,6 @@ def camtest():
 #################################################################################################
 print("----- Program start -----")
 
-#testrightleft()
-
-
 collectedberrys = 0
 motor.drive(0)
 pick.armdown()
@@ -389,16 +386,16 @@ cap = cam.opencam()
 if cap.isOpened():
     try:
         ## MAIN Program is here ##
-        start_point = ((5*17+14+10)/100) + turning_distance #setpoint
+        start_point = ((4*17+50)/100) + turning_distance #setpoint
         collectedberrys = collectedberrys + pick_all_in_line(cap,1,start_point)
         if drivetomarker(cap,1,0.27+turning_distance) == True:
             left()
         if drivetomarker(cap,2,0.27+turning_distance) == True:
             left()
-        start_point = ((5*17)/100) + turning_distance #setpoint
+        start_point = ((4*17+50)/100) + turning_distance #setpoint
         collectedberrys = collectedberrys + pick_all_in_line(cap,3,start_point)
         motor.drive(150)
-        time.sleep(0.5)
+        time.sleep(1)
         motor.drive(0)
     except KeyboardInterrupt:
         end(cap)

@@ -8,12 +8,12 @@ import Yolov3_tiny_inference as yolo
 
 #for AI
 #Load classes
-#with open('calibration_files/berries_labels.txt', 'r') as f:
-#    classes = [line.strip() for line in f.readlines()]
-#    COLORS = np.random.uniform(0, 255, size=(len(classes), 3))
+with open('calibration_files/berries_labels.txt', 'r') as f:
+    classes = [line.strip() for line in f.readlines()]
+    COLORS = np.random.uniform(0, 255, size=(len(classes), 3))
 
 # Initialize YOLO inference engine
-#yolov3Inference = yolo.Yolov3Inference(onnx_name='yolov3-tiny.onnx')
+yolov3Inference = yolo.Yolov3Inference(onnx_name='yolov3-tiny.onnx')
 
 
 devmode =0

@@ -56,5 +56,5 @@ def getarucoPosition(img,aruco_id):
                     print('Distance to marker ID {} is Norm: {}'.format(ids[i], np.linalg.norm(tvecs[i])))
         except:
             print('No arucos found')    
-    return x,y,distance,x_aruco,x1,x2
+    return x,y,distance,x_aruco
 
