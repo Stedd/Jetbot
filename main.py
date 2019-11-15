@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 print("----initializing----")
-import cv2
 import time
 import camera as cam
 import motor as motor
@@ -22,7 +21,7 @@ def end(cap):
     motor.drive(0)
     pick.armdown()
     cam.closecam(cap)
-    cv2.destroyAllWindows()  # Close all windows
+    #cv2.destroyAllWindows()  # Close all windows
 
 def right():
     #motor.drive_l(30)
@@ -39,15 +38,6 @@ def left():
     motor.drive_r(50)
     time.sleep(turningtime_left)
     motor.drive(0)
-
-def left_to_bush():
-    #motor.drive_l(-30)
-    #motor.drive_r(100)
-    motor.drive_l(-15)
-    motor.drive_r(50)
-    time.sleep(turningtime_left-0.1)
-    motor.drive(0)
-
 
 def halfright():
     motor.drive_l(15)
@@ -93,7 +83,7 @@ def driveback(cap):
 
 def findandpickberry(cap):
     #Settings
-    drivingspeed = 65 #60 or 85 # in %        
+    drivingspeed = 60 #60 or 85 # in %        
     pickingspeed = 20000 # speed of the arm 
     agg = 4 #4 #aggressitivity for picking # the safer the lower
     supersavedrivingspeed = 10 # in %
@@ -108,6 +98,7 @@ def findandpickberry(cap):
     devmode = 0 #always 0, 1 for output of stream and more information
 
     if devmode == 1:
+        import cv2
         drivingspeed = drivingspeed/4
         window_handle = cv2.namedWindow('Calibrated camera', cv2.WINDOW_AUTOSIZE)
 
@@ -197,12 +188,12 @@ def findandpickberry(cap):
         else:
             reachedberry = False
         # Get keyboard commands from the window
-        keyCode = cv2.waitKey(30) & 0xFF
+        #keyCode = cv2.waitKey(30) & 0xFF
         # Stop the program on the ESC key OR close the CSI camera window
-        if keyCode == 27:
-            print("Escape key is pressed")
-            end(cap)
-            break  # Breaks out of the while loop
+        #if keyCode == 27:
+        #    print("Escape key is pressed")
+        #    end(cap)
+        #    break  # Breaks out of the while loop
                 #forcing to framerate
         #toc= time.time()
         #while((toc - tic)<(1/(framerate+1))):
@@ -214,7 +205,7 @@ def findandpickberry(cap):
         #tic = time.time()
 
 def checkthisbush(cap):
-    left_to_bush()
+    left()
     time.sleep(0.25) #waiting before capturing the next image as this shows if red berry is there or not
     x,area,y = find.firstImage(cam.get_calibrated_img(cap))
     if area/10000 > Size_threshhold: # red berry on this bush
@@ -262,11 +253,11 @@ def vel_to_marker(cap,id,desired_distance,x_old):
             speedl = speedl - on_top/2
     #reducing velocity at the last centimeters
     #4 cm
-    if abs(distance-desired_distance) < 0.04 :
+    if abs(distance-desired_distance) < 0.05 :
         speedl = speedl * 0.5
         speedr = speedr * 0.5
         #2cm
-        if abs(distance-desired_distance) < 0.02 :
+        if abs(distance-desired_distance) < 0.03 :
             speedl = speedl * 0.2
             speedr = speedr * 0.2
     #reduccing velocity at high distance and high turn rate to not loose the marker in the image
@@ -280,7 +271,7 @@ def vel_to_marker(cap,id,desired_distance,x_old):
 def drivetomarker(cap,id,desired_distance):
     #Settings
     drivingspeed = 100
-    tolerance = 1/100 #+- in m
+    tolerance = 2/100 #+- in m
 
 
     x_old = int(720/2)
